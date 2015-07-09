@@ -1,0 +1,210 @@
+<html><head></head>
+    
+    <link href="styles/examples-offline.css" rel="stylesheet">
+    <link href="styles/kendo-styles/kendo.common.min.css" rel="stylesheet">
+    
+    <link href="styles/kendo-styles/kendo.rtl.min.css" rel="stylesheet">
+    <link href="styles/kendo-styles/kendo.default.min.css" rel="stylesheet">
+    <link href="styles/kendo-styles/kendo.dataviz.min.css" rel="stylesheet">
+    <link href="styles/kendo-styles/kendo.dataviz.default.min.css" rel="stylesheet">
+    <script src="scripts/kendo-scripts/jquery.min.js"></script>
+    <script src="scripts/kendo-scripts/angular.min.js"></script>
+    <script src="scripts/kendo-scripts/kendo.all.min.js"></script>
+    <script src="scripts/console.js"></script>
+<body>	
+<table> 
+<tr><td>
+
+<!-- ************************************************************ DropDownlist **********************************************-->
+<input id="dropdownlist" /><br/>
+<!--<span id="id_project" >Id</span><br/>
+<span id="project_name" >Project Name</span><br/> -->
+
+            <script>
+                $("#dropdownlist").kendoDropDownList({
+                  dataSource: {
+                    transport: {
+                                read: {
+                                	dataType: "json",
+                                    url: "http://192.168.43.168:9000/api/services/project"
+                                }
+                            },
+                            schema: {
+                            	data: "Data",
+                            	total: "Total",
+                            	model: {
+                            		id: "id",
+                            		fields: {
+                            			id_project: { editable: false, nullable: true },
+                            			project_name: { validation: { required: true } }
+                            		}
+                        			}
+                        		}
+                  },
+                  dataTextField: "project_name",
+                  dataValueField: "id_project",
+                  index: 1,
+                  select: onChange
+                });
+
+                function onChange(e) {
+                	
+                    var dataItem = e.sender.dataItem();
+                   /* $('#id_project').text(dataItem.id_project);
+                    $('#project_name').text(dataItem.project_name);*/
+                    var dataSource = new kendo.data.DataSource({
+                    type: "json",
+                    requestEnd: function (e) {
+                        if (e.type !== "read") {
+                            dataSource.read();
+                        }
+                    },
+                    transport: {
+                        read: {
+                            url: "http://192.168.43.168:9000/api/service_issues/"+dataItem.id_project,
+                            type: "GET"
+                        },
+                        update: {
+                            url: "http://192.168.43.168:9000/api/service/service_user",
+                            //contentType: "application/json",
+                            type: "put"
+                        },
+                        create: {
+                            url: "http://192.168.43.168:9000/api/service/UserProject/"+dataItem.id_project,
+                            type: "post"
+                        },
+                        destroy: {
+                            url: "http://192.168.43.168:9000/api/service/service_user",
+                            type: "delete"
+                        },
+                    },
+                    serverPaging: true,
+                    serverSorting: true,
+                    serverFiltering: true,
+                    pageSize: 10,
+                    schema: {
+                        data: "Data",
+                        total: "Total",
+                        model: {
+                            id: "id",
+                            fields: {
+                            	description: { validation: { required: true } },
+                            	summary: { validation: { required: true } },
+                            	priority: { validation: { required: true } },
+                            	type: { validation: { required: true } },
+                            	state: { validation: { required: true } },
+                            	assigned: { validation: { required: true } },
+                            	subsystem: { validation: { required: true } },
+                            	fix_version: { validation: { required: true } },
+                            	reffered_version: { validation: { required: true } },
+                            	fixed_in_built: { validation: { required: true } },
+                            	issue_name: { validation: { required: true } }
+                            }
+                        }
+                    }
+                });
+
+                function detailInit(e) {
+                    var detailRow = e.detailRow;
+
+                    detailRow.find(".tabstrip").kendoTabStrip({
+                        animation: {
+                            open: { effects: "fadeIn" }
+                        }
+                    });
+                }
+
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    groupable: true,
+                    sortable: true,
+                    filterable: true,
+                    pageable: {
+                        refresh: true,
+                        pageSizes: true,
+                        buttonCount: 5
+                    },
+                    detailTemplate: kendo.template($("#detail-template").html()),
+                    detailInit: detailInit,
+                    toolbar: ["create"],
+                    columns: [
+                        {
+                            field: "description",
+                            title: "Description"
+                        },
+                        {
+                            field: "summary",
+                            title: "Summary"
+                        },
+                        {
+                            field: "priority",
+                            title: "Priority"
+                        },
+                        {
+                            field: "type",
+                            title: "Type"
+                        },
+                        {
+                            field: "state",
+                            title: "State"
+                        },
+                        {
+                            field: "full_name",
+                            title: "Full Name"
+                        },
+                        {
+                            field: "assigned",
+                            title: "Assigned"
+                        },
+                        {
+                            field: "subsystem",
+                            title: "Subsystem"
+                        },
+                        {
+                            field: "fix_version",
+                            title: "Fix Version"
+                        },
+                        {
+                            field: "reffered_version",
+                            title: "Reffered Version"
+                        },
+                        {
+                            field: "fixed_in_built",
+                            title: "Fixed In Built"
+                        },
+                        {
+                            field: "issue_name",
+                            title: "Issue Names"
+                        }
+                    ],
+                    editable: "popup"
+                });
+                  };
+            </script>
+<!-- ************************************************************ DropDownlist **********************************************-->
+</td>
+<td></td>
+</tr>    
+
+<tr><td rowspan = "2" >
+<div id="grid"></div>       
+
+        <script type="text/x-kendo-template" id="detail-template">
+            <div class="tabstrip">
+                <ul>
+                    <li class="k-state-active">User Information</li>
+                </ul>
+                <div class="user-details">
+                    <ul>
+                        <li><label>Full Name:</label>#= full_name #</li>
+                    </ul>
+                </div>
+            </div>
+        </script>
+        
+  </td>
+  <td>Member Of Project</td>
+  </tr>
+ </table>
+</body>	
+</html>
